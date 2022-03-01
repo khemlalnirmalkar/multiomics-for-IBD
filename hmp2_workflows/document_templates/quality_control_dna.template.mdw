@@ -1,0 +1,128 @@
+
+<<label="qc_dna_setup", echo=False>>=
+import os
+import math
+
+import numpy
+import pandas as pd
+
+from biobakery_workflows import utilities, visualizations, files
+from hmp2_workflows.utils import viz as hmp2_viz 
+
+from anadama2 import PweaveDocument
+
+document = PweaveDocument()
+vars = document.get_vars()
+@
+
+<<label="qc_table_generation", echo=False>>=
+(dna_paired_columns, dna_orphan_columns), dna_samples, (dna_paired_data, dna_orphan_data) = visualizations.qc_read_counts(document, vars["dna_read_counts"])
+dna_microbial_reads, dna_microbial_labels = utilities.microbial_read_proportion_multiple_databases(
+    dna_paired_data, dna_paired_columns, dna_orphan_data)
+
+dna_paired_columns = [col.strip() for col in dna_paired_columns]
+dna_orphan_columns = [col.strip() for col in dna_orphan_columns]
+
+document.write_table(["Sample"]+dna_paired_columns, dna_samples, dna_paired_data,
+    files.ShotGunVis.path("qc_counts_paired", document.data_folder))
+document.write_table(["Sample"]+dna_orphan_columns, dna_samples, dna_orphan_data,
+    files.ShotGunVis.path("qc_counts_orphan", document.data_folder))
+document.write_table(["Sample"]+dna_microbial_labels, dna_samples, 
+    dna_microbial_reads, files.ShotGunVis.path("microbial_counts",document.data_folder))
+
+# Need to generate the JSON files for the read count tables we are visualizing
+hmp2_viz.convert_table_to_datatables_json(files.ShotGunVis.path('qc_counts_paired', document.data_folder), document.data_folder)
+hmp2_viz.convert_table_to_datatables_json(files.ShotGunVis.path('qc_counts_orphan', document.data_folder), document.data_folder)
+hmp2_viz.convert_table_to_datatables_json(files.ShotGunVis.path('microbial_counts', document.data_folder), document.data_folder)
+@
+
+<div class="tab-pane active" id="qc_tab"> 
+
+## Quality Control
+
+This report section contains information about the quality control processing for all samples. Samples were run through [KneadData](http://huttenhower.sph.harvard.edu/kneaddata) 
+which first trimmed reads to preserve high quality sequence and remove any adapter contaminants. Surviving sequence were filtred
+to remove any human contaminants using the human genome (hg38).
+
+Data are organized by paired and orphan reads. When one read in a pair passes a filtering step and the other does not the surviving read is an orphan. 
+
+### Metagenomic Samples Quality Control
+
+#### Metagenomic Samples: Tables of Filtered Reads
+<div id="qc_filtered_reads">
+<table id="qc_filtered_reads_paired_counts_table" class="table table-striped" cellspacing="0" width="100%">
+<caption>
+    <p>Paired-end Reads</p>
+    <ul class="caption-list">
+        <li>**Raw**: Number of reads based on de-multiplexed, unprocessed sequencing files</li>
+        <li>**Trim**: Number of reads remaining after trimming bases with Phred score < 20. If the trimmed reads is <70% of original length then it is removed altogether.</li>
+        <li>**hg38**: Number of reads remaining after depleting reads against the human genome (hg38).</li>
+    </ul>
+</caption>
+<thead>
+<tr>
+<th>Sample</th>
+<th>Raw</th>
+<th>Trim</th>
+<th>hg38</th>
+</tr>
+</thead>
+</table>
+
+<table id="qc_filtered_reads_orphan_counts_table" class="table table-striped" cellspacing="0" width="100%">
+<caption>
+    <p>Orphan Reads</p>
+    <ul class="caption-list">
+        <li>**Trim orphan1**: Number of orphan reads from pair1 of the paired-end sequences that did not have a corresponding read in pair2 following baseline trimming.</li>
+        <li>**Trim orphan1**: Number of orphan reads from pair2 of the paired-end sequences that did not have a corresponding read in pair1 following baseline trimming.</li>
+        <li>**hg38 oprhan1**: Number of orpahn reads from pair1 of the paried-end sequences that did not have a corresponding read in pair2 following human-contaminant filtering</li>
+        <li>**hg38 oprhan2**: Number of orpahn reads from pair1 of the paried-end sequences that did not have a corresponding read in pair1 following human-contaminant filtering</li>
+    </ul>
+</caption>
+<thead>
+<tr>
+<th>Sample</th>
+<th>Trim orphan1</th>
+<th>Trim orphan2</th>
+<th>hg38 orphan1</th>
+<th>hg38 orphan2</th>
+</tr>
+</thead>
+</table>
+
+<table id="qc_filtered_reads_microbial_proportion" class="table table-striped" cellspacing="0" width="100%"> 
+<caption>
+    <p>Microbial Read Proportions</p>
+    <ul class="caption-list">
+        <li>**hg38 / Trim**: Proportion of reads reamining after removing host reads relative to the number of quality-trimmed reads</li>
+        <li>**hg38 / Raw**: Proportion of reads remaining after removing host reads realtive to the number of raw unfilitered reads</li>
+    </ul>
+</caption>
+<thead>
+<tr>
+<th>Sample</th>
+<th>hg38 / Trim</th>
+<th>hg38 / Raw</th>
+</tr>
+</thead>
+</table>
+</div>
+
+### Metagenomic Samples Plots of Filtered Reads
+
+<<label="qc_plotly_setup", echo=False>>=
+hmp2_viz.convert_table_to_plotly_barplot_json(files.ShotGunVis.path('qc_counts_paired', 
+                                                                    document.data_folder),
+                                              document.data_folder,
+                                              hide_x_axis=True,
+                                              sort_on='Raw')
+hmp2_viz.convert_table_to_plotly_barplot_json(files.ShotGunVis.path('qc_counts_orphan', 
+                                                                    document.data_folder),
+                                              document.data_folder,
+                                              hide_x_axis=True,
+                                              sort_on='Trim orphan1')
+@
+
+<div id="qc_filtered_reads_paired_counts_plotly"></div>
+<div id="qc_filtered_reads_orphan_counts_plotly"></div>
+</div>

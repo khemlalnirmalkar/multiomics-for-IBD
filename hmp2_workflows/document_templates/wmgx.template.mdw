@@ -1,0 +1,44 @@
+
+---
+header-includes: 
+  - <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+  - <link rel="stylesheet" href="/static/css/carousel.css" />
+  - <link rel="stylesheet" href="/static/css/mezzanine.css" />
+  - <link rel="stylesheet" href="/static/css/bootstrap-theme.min.css" />
+  - <link rel="stylesheet" href="/static/css/datatables.min.css" />
+  - <link rel="stylesheet" href="/static/css/ibdmdb-summary.css" />
+  - <script src="/static/mezzanine/js/jquery-1.7.1.min.js"></script>
+  - <script src="/static/js/bootstrap.js"></script>
+  - <script src="/static/js/datatables.min.js"></script>
+  - <script src="/static/js/plotly-latest.min.js"></script>
+  - <script src="/static/js/viz_common.js"></script>
+  - <script src="/static/js/wmgx.js"></script>
+
+---
+
+<<label="wmgx_setup", echo=False>>=
+from biobakery_workflows import utilities
+
+from anadama2 import PweaveDocument
+
+document = PweaveDocument()
+vars = document.get_vars()
+@
+
+<div class="Row">
+<div class="page-header">
+## <%= vars['summary_title'] %>
+<span>The following data were run through a standard workflow for metagenomic sequence analysis.</span>
+</div>
+</div>
+
+<!-- Main page content follows -->
+<div id="main_content" class="Row">
+<ul class="nav nav-tabs">
+<li role="presentation" class="active"><a href="#qc_tab" data-toggle="tab">Quality Control</a></li>
+<li role="presentation"><a href="#tax_tab" data-toggle="tab">Taxonomy</a></li>
+<li role="presentation"><a href="#func_tab" data-toggle="tab">Functional Profiling</a></li>
+</ul>
+
+<div class="panel-body">
+<div class="tab-content">

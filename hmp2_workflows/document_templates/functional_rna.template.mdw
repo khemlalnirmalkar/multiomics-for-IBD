@@ -1,0 +1,106 @@
+
+<<label="functional_rna_setup", echo=False>>=
+import os
+import numpy
+
+from biobakery_workflows import utilities
+
+from anadama2 import PweaveDocument
+
+document = PweaveDocument()
+vars = document.get_vars()
+
+max_sets = 50
+
+top_norm_pathways=50
+top_norm_ecs=50
+top_norm_genes=50
+@
+
+<div class="tab-pane" id="func_tab"> 
+
+## Functional Profiling
+
+This report section contains preliminary exploratory figures that summarize 
+HUMAnN2 functional profiling of all samples. HUMAnN2 performs species-specific and species-agnostic 
+quantification of gene families, EC enzyme modules, and pathways, using the UniRef and MetaCyc databases.
+For more information on functional profiling and the databases used, see websites for 
+[HUMAnN2](http://huttenhower.sph.harvard.edu/humann2), 
+[UniRef](http://www.uniprot.org/help/uniref), 
+and [MetaCyc](https://metacyc.org/). 
+
+### Pathway Abundances
+
+Hierarchical clustering using top **<%= max_sets %>** pathways 
+with highest mean relative abundance among samples. The "average linkage" 
+clustering on the Euclidean distance metric was used to cluster samples.
+The pathway dendrogram is based on pairwise (Spearman) correlation between pathways.
+Samples are columns and pathway are rows. The heatmaps were generated with [Hclust2](https://bitbucket.org/nsegata/hclust2).
+
+The heatmaps show RNA normalized to DNA for the three features computed by HUMAnN2: gene families, ecs and pathways."
+Note the most abundant DNA features are not necessarily those with the highest transcription (RNA) levels."
+
+
+<<label="norm_ratio_pathways_table", echo=False>>=
+samples, top_pathways, top_pathway_data, top_names_and_descriptions = visualizations.top_average_pathways(
+    document, vars["paths_norm_ratio"], top_norm_pathways)
+
+# write a table of the pathways average and variance
+pathway_file_name="top_average_rna_dna_pathways_names.tsv"
+average_abundance_variance=visualizations.write_pathway_average_variance_table(document, pathway_file_name, top_pathway_data, top_names_and_descriptions)
+hmp2_viz.convert_table_to_datatables_json(os.path.join(document.data_folder, pathway_file_name), document.data_folder)
+@
+
+<div id="func_pathways_div">
+<table id="func_pathways_count_table" class="table table-striped" cellspacing="0" width="100%">
+<caption>Top <% print(str(top_norm_pathways)) %> RNA Pathways by Average Abundance</caption>
+<thead>
+<tr>
+<th>Pathway</th>
+<th>Average abundance (RPK/RPK)</th>
+<th>Variance</th>
+</tr>
+</thead>
+</table>
+</div>
+
+### Features
+
+Feature detection as a function of sequencing depth. Effect of sample sequencing depth on the ability to detect 
+microbiome functional features in metatranscriptomic sequence data. HUMAnN2 functional profiling of 
+RNA quality filtered reads was performed on individual samples in species-specific mode (blue), i.e. nucleotide 
+alignment against pangenomes of species identified in the sample with MetaPhlAn2, and in combined species-specific 
+and -agnostic (orange) mode, in which reads not matching any pangenome reference sequences were subjected to translated 
+searching against the UniRef90 database. Each profiled sample is represented by a orange and blue point in each plot. 
+Linear regression fit is represented by straight lines in each plot.
+
+#### RNA/DNA Normalized Features
+
+#### RNA Features
+
+<<label="features_alignment_rate", echo=False>>=
+# read in the read count and feature count files
+total_reads, nucleotide_reads, translated_reads, genefamilies_counts, ecs_counts, pathabundance_counts = visualizations.feature_counts(
+    document, vars["aligned_read_counts"],vars["feature_counts"])
+
+# add scatter plots of the data
+document.plot_scatter([[total_reads,nucleotide_reads],[total_reads,translated_reads]],title="RNA Read alignment rate",
+                      row_labels=["Nucleotide search","Nucleotide + translated search"],xlabel="log10(Input reads)", ylabel="log10(Aligned reads)", trendline=True)
+
+@
+
+<%= visualizations.ShotGun.captions["scatter_reads_aligned"] %> 
+
+<<label="features_plots", echo=False>>=
+document.plot_scatter([[nucleotide_reads,pathabundance_counts],[translated_reads,pathabundance_counts]],title="RNA Pathways",
+                        row_labels=["Nucleotide search","Nucleotide + translated search"],xlabel="log10(Aligned reads)", ylabel="log10(Pathways)", trendline=True)
+
+document.plot_scatter([[nucleotide_reads,ecs_counts],[translated_reads,ecs_counts]],title="RNA Enzymes (ECs)",
+                       row_labels=["Nucleotide search","Nucleotide + translated search"],xlabel="log10(Aligned reads)", ylabel="log10(ECs)", trendline=True)
+@                       
+
+<%= visualizations.ShotGun.captions["scatter_features"] %>
+
+</div>
+</div>
+</div>

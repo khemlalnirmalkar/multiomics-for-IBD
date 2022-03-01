@@ -1,0 +1,152 @@
+## Configuration parameters required to handle any metadata file creation 
+## or refresh for the HMP2 project
+project: HMP2
+
+# Next comes up the directories where our AnADAMA2 pipelines will pull and
+# deposit files to.        
+deposition_dir: /PATH/TO/DATA/DEPOSITION/DIRECTORY
+processing_dir: /PATH/TO/DATA/PROCESSING/DIRECTORY
+public_dir: /Users/cesararze/Downloads/metadata_testing
+
+dtype_mapping:
+    MBX: "metabolomics"
+    MGX: "metagenomics"
+    16S: "amplicon"
+    Proteomics: "proteomics"
+    MTX: "metatranscriptomics"
+
+drop_cols:
+    - Sheet Name
+    - Subject
+    - Status
+    - Receipt Status
+    - "Collection #"
+    - Parent Sample A
+    - Parent Sample B
+    - DNA/RNA
+    - DNA/RNA mass
+    - DNA/RNA status
+    - MbX
+    - MBX mass
+    - MBX status
+    - MBX leak?
+    - MBX Volume Recorded
+    - Viromics
+    - Viromics mass
+    - Viromics status
+    - Viromics Selection
+    - Storage 
+    - Storage mass
+    - Storage status
+    - Storage Sample Selection
+    - Fecal Cal Selection
+    - Fecal Calprotectin
+    - Fecal Cal mass
+    - Fecal Cal status
+    - Proteomics
+    - Proteomics mass
+    - Proteomics status
+    - Prot. Sample Selection
+    - SiteName
+    - sample_ids
+    - Dataset
+    - State
+    - Job
+    - Tool
+    - Parameter_File
+    - Settings_File
+    - Instrument
+    - Experiment
+    - Campaign
+    - Organism
+    - Organism DB
+    - Protein Collection List
+    - Protein Options
+    - Comment
+    - Results Folder
+    - Folder
+    - Dataset_ID
+    - Dataset_Created
+    - Job_Finish
+    - Dataset_Rating
+    - Separation_Type
+    - Dataset_Type
+    - Request_ID
+    - Site/Sub/Coll
+
+col_order:
+    - Project
+    - External ID
+    - Participant ID
+    - Site/Sub/Coll ID
+    - data_type
+    - Actual Date of Receipt
+    - week_num
+    - interval_days
+    - visit_num
+    - Research Project
+    - PDO Number
+    - GSSR IDs
+    - Product
+    - LCSET
+    - Aggregated Lanes
+    - WR ID
+    - # Lanes In Aggregation
+    - Total Reads
+
+## Baseline or screening columns are columns that contain pieces of metadata
+## that are relevant to analysis that will be done so we will need to pull
+## them specifically out of these baseline columns 
+baseline_cols:
+    - mc_q4
+    - mc_q7
+
+col_rename:
+    "Site/Sub/Coll ID": site_sub_coll
+    "SiteName": "site_name"
+    "sex": "sex"
+    "race": "race"
+    "diagnosis": "diagnosis"
+    "mh_heading3": "antibiotics"
+    "Actual Date of Receipt": date_of_receipt
+    "mc_q4": baseline_montreal_location
+    "mc_q7": baseline_uc_extent
+    "sccai_score": "sccai"
+    "hbi_score": "hbi"
+    "Age of consent": "consent_age"
+    "Age at diagnosis": "age_at_dx"
+    "st_q16": "fecalcal"
+
+value_recode:
+    "diagnosis":
+        "Crohn's Disease": "CD"
+        "Ulcerative colitis": "UC"
+        "Healthy control": "nonIBD"
+
+biopsy_col_to_location:
+    "bx_q5": "Rectum"
+    "bx_q6": "Ileum"
+    "bx_q7": "Other Inflamed"
+    "bx_q9": "Non-inflamed"
+
+biopsy_flora_col_to_location:
+    "bx_q13": "Rectum"
+    "bx_q14": "Ileum"
+    "bx_q15": "Other Inflamed"
+    "bx_q17": "Non-inflamed"
+
+biopsy_other_location:
+    "0": "Terminal ileum"
+    "1": "Neo-ileum"
+    "2": "Ileocecal Valve"
+    "3": "Cecum"
+    "4": "Ascending (right-sided) colon"
+    "5": "Transverse colon"
+    "6": "Descending (left-sided) colon"
+    "7": "Sigmoid Colon"
+    "8": "Rectum"
+
+## The cutplace CID files to use against our metadata files.
+validators:
+    studytrax: /Users/cesararze/Documents/work/hutlab/projects/hmp2_workflows/hmp2_workflows/config/validation/studytrax.cid
+    broad_sample_status: /Users/cesararze/Documents/work/hutlab/projects/hmp2_workflows/hmp2_workflows/config/validation/broad_data.cid

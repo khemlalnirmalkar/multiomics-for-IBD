@@ -1,0 +1,20 @@
+% <% from anadama2 import PweaveDocument; document=PweaveDocument(); vars = document.get_vars(); print(vars["summary_title"]) %>
+
+<div class="container">
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+<div class="container-fluid">
+<div class="navbar-header">
+<a class="navbar-brand" href="/" style="padding: 0px 10px;">
+<img src="/static/img/gut_cartoon.png" alt="IBDMDB.org" height="50" width="50">
+</a>
+</div>
+
+<ul class="nav navbar-nav">
+<li id="dropdown-menu-home"><a href="/">Home</a></li>
+<li class="active" id="-results"><a href="/results">Download Data</a></li>
+<li class="" id="-cb-browser"><a href="/cb/browser">Protocols</a></li>
+<li class="" id="project"><a href="/project/">Team</a></li>
+<li class="" id="-participant"><a href="/participant">Participant Interface</a></li>
+</ul>
+</div>
+</div>

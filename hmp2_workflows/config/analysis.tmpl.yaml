@@ -1,0 +1,195 @@
+## This is a configuration file encompassing all the parameters needed to 
+## execute the HMP2 AnADAMA2 analysis pipelines.
+
+###################
+# BASE PARAMETERS #
+###################
+
+base: &base
+    # It seems like a lot of the sequences handled by the Broad are dropped
+    # in the following directory.
+    # broad_sequence_dir: 
+
+    # Next comes up the directories where our AnADAMA2 pipelines will pull and
+    # deposit files to.        
+    deposition_dir: /PATH/TO/DATA/DEPOSITION/DIRECTORY
+    processing_dir: /PATH/TO/DATA/PROCESSING/DIRECTORY
+    public_dir: /PATH/TO/PUBLIC/DATA/DIRECTORY
+
+    # Databases used by the various different workflows. 
+    # TODO: Move these to a centralized location
+    databases:
+        gg_usearch: /PATH/TO/GREENGENES/DB/gg_13_5_otus/rep_set/97_otus.udb
+        gg_taxonomy: /PATH/TO/GREENGENES/DB/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
+        gg_fasta: /PATH/TO/GREENGENES/DB/gg_13_5_otus/rep_set/97_otus.fasta
+        chimera: /PATH/TO/UCHIME/DB/uchime/gold.fa
+        copy_num: /PATH/TO/PICRUST/DB/picrust/data/16S_13_5_precalculated.tab.gz        
+        knead_dna: /PATH/TO/KNEAD/DB/Homo_sapiens_Bowtie2_v0.1
+        knead_mtx: /PATH/TO/KNEAD/DB/mrna
+        knead_rrna: /PATH/TO/KNEAD/DB/silva-119-1_SSURef_nr99
+        humann2_nt: /PATH/TO/HUMANN2/DB/chocophlan
+        humann2_p: /PATH/TO/HUMANN2/DB/uniref
+
+    data_type_mapping:
+        MBX: "metabolomics"
+        MGX: "metagenomics"
+        16S: "amplicon"
+        MPX: "proteomics"
+        MTX: "metatranscriptomics"
+        HTX: "host_transcriptomics"
+        SER: "serology"
+        RRBS: "methylome"
+        HG: "host_genome"
+        16SBP: "biopsy_16S"
+        MVX: "viromics"
+
+    target_metadata_cols: &metadata_cols
+        - site_sub_coll
+        - site_name
+        - sex
+        - race
+        - consent_age
+        - week_num
+        - diagnosis
+        - baseline_montreal_location
+        - baseline_uc_extent
+
+    analysis_col_patterns:
+        - _taxonomic_profile
+        - _functional_profile
+        - _Abundance-RPKs
+        - _Abundance
+        - _Coverage
+        - HMP.2.
+
+    col_rename: &col_rename
+        Site/Sub/Coll ID: site_sub_coll
+        SiteName: site_name
+        Sex: sex
+        Race: race
+        Antibiotics: antibiotics
+        Diagosis: diagnosis
+        
+
+############################
+# PER-DATATYPE  PARAMETERS #
+############################
+
+MPX: &proteomics
+    <<: *base
+    
+    metadata_id_col: Job
+
+    target_metadata_cols:
+        - *metadata_cols
+        - sccai
+        - hbi
+        - fecalcal
+
+MGX: &mgx
+    <<: *base
+
+    metadata_id_col: External ID
+
+    target_metadata_cols:
+        - *metadata_cols
+        - sccai
+        - hbi
+        - fecalcal
+        - filtered_reads
+
+16S: &16S
+    <<: *base
+
+    # Some analysis parameters            
+    min_pred_qc_score: 2
+    maxee: 1
+    trunc_len_max: 150
+    min_size: 2
+    percent_identity: 0.97
+
+    target_metadata_cols:
+        - *metadata_cols
+        - sccai
+        - hbi
+        - fecalcal
+        - filtered_read_counts
+
+MTX: &mtx
+    <<: *base
+    
+    metadata_id_col: "site_sub_coll"
+
+    # When attempting to match taxonomic profiles to a MTX sequences 
+    # use this column in our metadata file to find match.
+    tax_profile_id: "External ID"
+
+    target_metadata_cols:
+        - *metadata_cols
+        - sccai
+        - hbi
+        - fecalcal
+        - filtered_reads
+
+MVX: &mvx
+    <<: *base
+    
+    metadata_id_col: "External ID"
+
+    target_metadata_cols:
+        - *metadata_cols
+        - sccai
+        - hbi
+        - fecalcal
+        - total_reads
+        - Viral Reads
+        - filtered_reads
+
+MBX: &mbx
+    <<: *base
+
+    metadata_id_col: "Tube A: Metabolomics"
+
+    target_metadata_cols:
+        - *metadata_cols
+        - sccai
+        - hbi
+        - fecalcal
+        - Injection Order
+        - Date extracted
+        - Date injected 
+        - Column
+
+HG: &hg
+    <<: *base
+
+    metadata_id_col: "External ID"
+
+HTX: &htx
+    <<: *base
+    
+    target_metadata_cols:
+        - *metadata_cols
+        - total_reads
+        - biopsy_location
+        - is_inflamed
+
+    metadata_id_col: "External ID"
+
+16SBP: &16sbp
+    <<: *base
+
+    target_metadata_cols:
+        - *metadata_cols
+        - biopsy_location
+        - is_inflamed  
+
+RRBS: &rrbs
+    <<: *base
+
+    metadata_id_col: "External ID"
+
+SER: &ser
+    <<: *base
+
+    metadata_id_col: "External ID"    
